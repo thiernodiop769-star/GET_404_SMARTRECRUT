@@ -1,3 +1,1 @@
-# SmartRecrut
-
-[![Open in Bolt](https://bolt.new/static/open-in-bolt.svg)](https://bolt.new/~/sb1-7j8cezfr)
+https://smart-recrut-k7t4ixap9-smartrecrut.vercel.app/
