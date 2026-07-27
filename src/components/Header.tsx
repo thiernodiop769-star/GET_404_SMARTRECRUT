@@ -1,4 +1,3 @@
-import { Briefcase } from 'lucide-react';
 
 export type Page = 'home' | 'candidates' | 'contact';
 
@@ -22,11 +21,16 @@ export default function Header({ current, onNavigate }: HeaderProps) {
             onClick={() => onNavigate('home')}
             className="flex items-center gap-2.5 group"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-corporate-700 text-white shadow-sm transition-transform group-hover:scale-105">
-              <Briefcase className="h-5 w-5" />
-            </span>
-            <span className="text-lg font-bold text-slate-900 tracking-tight">
-              Quick<span className="text-corporate-700">Recrut</span>
+            <img
+              src="/logo.svg"
+              alt="QuickRecrut"
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-xl transition-transform group-hover:scale-105"
+            />
+            <span className="text-lg font-bold tracking-tight">
+              <span className="text-corporate-700">Quick</span>
+              <span className="text-accent-500">Recrut</span>
             </span>
           </button>
 
