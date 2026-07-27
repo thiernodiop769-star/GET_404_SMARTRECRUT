@@ -24,9 +24,7 @@ export default function App() {
       <Header current={page} onNavigate={setPage} />
       <main className="flex-1">
         {page === 'home' && <Home onNavigate={setPage} />}
-        {page === 'candidates' && (
-          <Candidates candidates={candidates} updateStatus={updateStatus} />
-        )}
+        {page === 'candidates' && <Candidates />}
         {page === 'contact' && <Contact />}
       </main>
       <Footer onNavigate={setPage} />
