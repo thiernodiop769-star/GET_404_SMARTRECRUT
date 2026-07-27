@@ -447,22 +447,9 @@ export default function Candidates() {
                     >
                       {c.statut}
                     </span>
-                    <div className="flex items-center gap-2">
-                      {c.cv_url && (
-                        <a
-                          href={c.cv_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-xs font-medium text-corporate-600 hover:text-corporate-700"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                          CV
-                        </a>
-                      )}
-                      <span className="text-xs text-slate-400">
-                        Reçu il y a {c.recu_il_y_a}h
-                      </span>
-                    </div>
+                    <span className="text-xs text-slate-400">
+                      Reçu il y a {c.recu_il_y_a}h
+                    </span>
                   </div>
 
                   {/* Actions */}
@@ -497,6 +484,19 @@ export default function Candidates() {
                       Refuser
                     </button>
                   </div>
+
+                  {/* Voir le CV button (only when a PDF was uploaded) */}
+                  {c.cv_url && (
+                    <a
+                      href={c.cv_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-900 bg-transparent px-3 py-1.5 text-xs font-semibold text-blue-900 transition-all hover:bg-blue-50"
+                    >
+                      <FileText className="h-3.5 w-3.5" />
+                      Voir le CV
+                    </a>
+                  )}
                 </div>
               );
             })}
