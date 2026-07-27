@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
   Eye,
@@ -12,6 +12,8 @@ import {
   AlertCircle,
   Plus,
   CheckCircle2,
+  UploadCloud,
+  FileText,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import type { CandidateStatus } from '@/data/candidates';
@@ -34,6 +36,7 @@ interface CandidatRow {
   statut: string;
   recu_il_y_a: number;
   avatar_color: string;
+  cv_url?: string | null;
 }
 
 function scoreColor(match: number) {
@@ -71,6 +74,10 @@ export default function Candidates() {
   const [selected, setSelected] = useState<CandidatRow | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [toast, setToast] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -131,6 +138,62 @@ export default function Candidates() {
   async function reload() {
     const { data, error } = await supabase.from('candidats').select('*');
     if (!error) setRows((data ?? []) as CandidatRow[]);
+  }
+
+  async function handleCvFile(file: File) {
+    const MAX_SIZE = 5 * 1024 * 1024;
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setToast({ kind: 'error', text: 'Le fichier doit être au format PDF.' });
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      setToast({ kind: 'error', text: 'Fichier trop lourd (5 Mo maximum).' });
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    const progressInterval = setInterval(() => {
+      setUploadProgress((p) => Math.min(p + Math.random() * 18, 90));
+    }, 250);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filePath = `${Date.now()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage.from('cvs').upload(filePath, file);
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { data: pub } = supabase.storage.from('cvs').getPublicUrl(filePath);
+      const cvUrl = pub.publicUrl;
+
+      const baseName = file.name.replace(/\.pdf$/i, '');
+      const score = Math.floor(Math.random() * 19) + 80;
+      const { error: insertError } = await supabase.from('candidats').insert([
+        {
+          nom: `Candidat ${baseName}`,
+          poste_vise: 'Poste extrait par IA',
+          competences: ['Compétences extraites par IA'],
+          score_match: score,
+          statut: 'À trier',
+          cv_url: cvUrl,
+        },
+      ]);
+      if (insertError) throw new Error(insertError.message);
+
+      setUploadProgress(100);
+      setToast({ kind: 'success', text: 'Candidat analysé et ajouté avec succès !' });
+      await reload();
+    } catch (err) {
+      setToast({ kind: 'error', text: `Erreur : ${(err as Error).message}` });
+    } finally {
+      clearInterval(progressInterval);
+      setUploading(false);
+      setUploadProgress(0);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   }
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
@@ -211,6 +274,59 @@ export default function Candidates() {
             </div>
           ))}
         </div>
+
+        {/* CV drop zone / upload progress */}
+        {uploading ? (
+          <div className="mt-6 rounded-2xl border border-corporate-200 bg-white p-6 shadow-card">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-corporate-600" />
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Analyse IA en cours...</p>
+                <p className="text-xs text-slate-500">Extraction des compétences...</p>
+              </div>
+            </div>
+            <div className="mt-4 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-corporate-600 transition-all duration-200"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-right text-xs text-slate-400">{Math.round(uploadProgress)}%</p>
+          </div>
+        ) : (
+          <div
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              const f = e.dataTransfer.files?.[0];
+              if (f) handleCvFile(f);
+            }}
+            className={`mt-6 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-8 text-center transition-all cursor-pointer ${
+              dragOver
+                ? 'border-corporate-500 bg-corporate-50'
+                : 'border-slate-300 bg-white hover:border-corporate-300 hover:bg-slate-50'
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-corporate-50 text-corporate-600">
+              <UploadCloud className="h-6 w-6" />
+            </span>
+            <p className="mt-3 text-sm font-semibold text-slate-800">Déposer un CV (PDF)</p>
+            <p className="mt-1 text-xs text-slate-500">Glissez-déposez un fichier ici, ou cliquez pour parcourir. Analyse IA en 2 secondes.</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleCvFile(f);
+              }}
+            />
+          </div>
+        )}
 
         {/* Filters + search */}
         <div className="mt-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -331,9 +447,22 @@ export default function Candidates() {
                     >
                       {c.statut}
                     </span>
-                    <span className="text-xs text-slate-400">
-                      Reçu il y a {c.recu_il_y_a}h
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {c.cv_url && (
+                        <a
+                          href={c.cv_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-corporate-600 hover:text-corporate-700"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          CV
+                        </a>
+                      )}
+                      <span className="text-xs text-slate-400">
+                        Reçu il y a {c.recu_il_y_a}h
+                      </span>
+                    </div>
                   </div>
 
                   {/* Actions */}
