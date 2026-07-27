@@ -26,7 +26,7 @@ export default function Header({ current, onNavigate }: HeaderProps) {
               <Briefcase className="h-5 w-5" />
             </span>
             <span className="text-lg font-bold text-slate-900 tracking-tight">
-              Smart<span className="text-corporate-700">Recrut</span>
+              Quick<span className="text-corporate-700">Recrut</span>
             </span>
           </button>
 

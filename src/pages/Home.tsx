@@ -40,7 +40,7 @@ const features = [
 
 const steps = [
   { n: '01', title: 'Déposez la fiche de poste', desc: 'Décrivez le poste et les compétences requises.' },
-  { n: '02', title: 'Importez les CVs', desc: 'Glissez vos candidatures, SmartRecrut fait le reste.' },
+  { n: '02', title: 'Importez les CVs', desc: 'Glissez vos candidatures, QuickRecrut fait le reste.' },
   { n: '03', title: 'Analysez les profils', desc: 'Consultez les scores et retenez les meilleurs talents.' },
 ];
 
@@ -64,7 +64,7 @@ export default function Home({ onNavigate }: HomeProps) {
               matching IA
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-slate-600 leading-relaxed text-balance">
-              SmartRecrut analyse vos CVs et identifie les meilleurs talents en quelques
+              QuickRecrut analyse vos CVs et identifie les meilleurs talents en quelques
               secondes.
             </p>
             <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -143,7 +143,7 @@ export default function Home({ onNavigate }: HomeProps) {
               Une plateforme pensée pour les RH
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              Du dépôt de l'appel d'offre à la sélection finale, SmartRecrut fluidifie
+              Du dépôt de l'appel d'offre à la sélection finale, QuickRecrut fluidifie
               chaque étape du recrutement.
             </p>
           </div>

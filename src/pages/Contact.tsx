@@ -73,7 +73,7 @@ export default function Contact() {
             Contactez l'équipe RH
           </h1>
           <p className="mt-3 text-lg text-slate-600">
-            Une question sur SmartRecrut, une démo ou un partenariat ? Écrivez-nous.
+            Une question sur QuickRecrut, une démo ou un partenariat ? Écrivez-nous.
           </p>
         </div>
 
@@ -125,7 +125,7 @@ export default function Contact() {
 
             <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-card h-64">
               <iframe
-                title="SmartRecrut — Immeuble Le Diamant, Plateau, Dakar"
+                title="QuickRecrut — Immeuble Le Diamant, Plateau, Dakar"
                 src="https://www.openstreetmap.org/export/embed.html?bbox=-17.448%2C14.668%2C-17.428%2C14.688&layer=mapnik&marker=14.678%2C-17.438"
                 className="h-full w-full border-0"
                 loading="lazy"

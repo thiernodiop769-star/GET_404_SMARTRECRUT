@@ -24,7 +24,7 @@ export default function Footer({ onNavigate }: FooterProps) {
                 <Briefcase className="h-5 w-5" />
               </span>
               <span className="text-lg font-bold text-white">
-                Smart<span className="text-corporate-300">Recrut</span>
+                Quick<span className="text-corporate-300">Recrut</span>
               </span>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
@@ -92,7 +92,7 @@ export default function Footer({ onNavigate }: FooterProps) {
         </div>
 
         <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} SmartRecrut. Tous droits réservés.</p>
+          <p>© {new Date().getFullYear()} QuickRecrut. Tous droits réservés.</p>
           <div className="flex gap-5">
             <button className="hover:text-slate-300 transition-colors">Mentions légales</button>
             <button className="hover:text-slate-300 transition-colors">Politique de confidentialité</button>
