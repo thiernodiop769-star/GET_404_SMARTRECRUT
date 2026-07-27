@@ -10,6 +10,8 @@ import {
   Clock,
   Loader2,
   AlertCircle,
+  Plus,
+  CheckCircle2,
 } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import type { CandidateStatus } from '@/data/candidates';
@@ -67,6 +69,8 @@ export default function Candidates() {
   const [filter, setFilter] = useState<Filter>('all');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<CandidatRow | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [toast, setToast] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,6 +91,12 @@ export default function Candidates() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const filtered = useMemo(() => {
     return rows.filter((c) => {
@@ -118,6 +128,41 @@ export default function Candidates() {
     await supabase.from('candidats').update({ statut: status }).eq('id', id);
   }
 
+  async function reload() {
+    const { data, error } = await supabase.from('candidats').select('*');
+    if (!error) setRows((data ?? []) as CandidatRow[]);
+  }
+
+  async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const nom = String(form.get('nom') ?? '').trim();
+    const poste_vise = String(form.get('poste_vise') ?? '').trim();
+    const competencesRaw = String(form.get('competences') ?? '').trim();
+    const score_match = Number(form.get('score_match') ?? 0) || 0;
+    const statut = String(form.get('statut') ?? 'À trier');
+
+    if (!nom || !poste_vise || !competencesRaw) {
+      setToast({ kind: 'error', text: 'Tous les champs obligatoires doivent être remplis.' });
+      return;
+    }
+
+    const competences = competencesRaw.split(',').map((s) => s.trim()).filter(Boolean);
+
+    const { error: insertError } = await supabase
+      .from('candidats')
+      .insert([{ nom, poste_vise, competences, score_match, statut }]);
+
+    if (insertError) {
+      setToast({ kind: 'error', text: `Erreur : ${insertError.message}` });
+      return;
+    }
+
+    setShowAdd(false);
+    setToast({ kind: 'success', text: 'Candidat ajouté avec succès !' });
+    await reload();
+  }
+
   const retained = rows.filter((c) => c.statut === 'Retenu').length;
   const avgMatch = rows.length ? Math.round(rows.reduce((s, c) => s + c.score_match, 0) / rows.length) : 0;
 
@@ -132,9 +177,18 @@ export default function Candidates() {
               CVs triés automatiquement par score de correspondance.
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Sparkles className="h-4 w-4 text-accent-500" />
-            <span>Matching IA actif</span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowAdd(true)}
+              className="inline-flex items-center gap-2 rounded-lg bg-corporate-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-corporate-800 hover:shadow-md"
+            >
+              <Plus className="h-4 w-4" />
+              Ajouter un candidat
+            </button>
+            <div className="hidden sm:flex items-center gap-2 text-sm text-slate-500">
+              <Sparkles className="h-4 w-4 text-accent-500" />
+              <span>Matching IA actif</span>
+            </div>
           </div>
         </div>
 
@@ -320,6 +374,120 @@ export default function Candidates() {
           </div>
         )}
       </div>
+
+      {/* Add candidate modal */}
+      {showAdd && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-up"
+          onClick={() => setShowAdd(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between bg-corporate-700 px-5 py-4">
+              <h2 className="text-base font-semibold text-white">Ajouter un candidat</h2>
+              <button
+                onClick={() => setShowAdd(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25 transition"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <form onSubmit={handleAdd} className="px-5 py-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Nom <span className="text-rose-500">*</span></label>
+                <input
+                  name="nom"
+                  required
+                  placeholder="Ex. Amina Diallo"
+                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-corporate-400 focus:ring-2 focus:ring-corporate-100 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Poste visé <span className="text-rose-500">*</span></label>
+                <input
+                  name="poste_vise"
+                  required
+                  placeholder="Ex. Data Scientist"
+                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-corporate-400 focus:ring-2 focus:ring-corporate-100 outline-none transition"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700">Compétences <span className="text-rose-500">*</span></label>
+                <input
+                  name="competences"
+                  required
+                  placeholder="Ex. Python, SQL, Machine Learning"
+                  className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-corporate-400 focus:ring-2 focus:ring-corporate-100 outline-none transition"
+                />
+                <p className="mt-1 text-xs text-slate-400">Séparez les compétences par des virgules.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Score de match</label>
+                  <input
+                    name="score_match"
+                    type="number"
+                    min={0}
+                    max={100}
+                    defaultValue={0}
+                    className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:border-corporate-400 focus:ring-2 focus:ring-corporate-100 outline-none transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700">Statut</label>
+                  <select
+                    name="statut"
+                    defaultValue="À trier"
+                    className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 focus:border-corporate-400 focus:ring-2 focus:ring-corporate-100 outline-none transition bg-white"
+                  >
+                    <option value="À trier">À trier</option>
+                    <option value="Retenu">Retenu</option>
+                    <option value="Refusé">Refusé</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdd(false)}
+                  className="flex-1 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg bg-corporate-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-corporate-800 transition"
+                >
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-5 left-1/2 z-[60] -translate-x-1/2 animate-fade-up">
+          <div
+            className={`flex items-center gap-2.5 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+              toast.kind === 'success'
+                ? 'bg-emerald-600 text-white'
+                : 'bg-rose-600 text-white'
+            }`}
+          >
+            {toast.kind === 'success' ? (
+              <CheckCircle2 className="h-5 w-5" />
+            ) : (
+              <AlertCircle className="h-5 w-5" />
+            )}
+            {toast.text}
+          </div>
+        </div>
+      )}
 
       {/* CV modal */}
       {selected && (
