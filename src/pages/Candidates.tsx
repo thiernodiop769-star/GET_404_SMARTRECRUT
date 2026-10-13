@@ -491,7 +491,7 @@ export default function Candidates() {
                       href={c.cv_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-900 bg-transparent px-3 py-1.5 text-xs font-semibold text-blue-900 transition-all hover:bg-blue-50"
+                      className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-lg border border-red-900 bg-transparent px-3 py-1.5 text-xs font-semibold text-red-900 transition-all hover:bg-red-50"
                     >
                       <FileText className="h-3.5 w-3.5" />
                       Voir le CV

@@ -5,16 +5,16 @@ export default {
     extend: {
       colors: {
         corporate: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#1E3A8A',
-          800: '#1e2f6e',
-          900: '#172554',
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
         },
         accent: {
           50: '#fff7ed',
@@ -32,7 +32,7 @@ export default {
       },
       boxShadow: {
         card: '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.08)',
-        'card-hover': '0 10px 30px -10px rgb(30 58 138 / 0.25)',
+        'card-hover': '0 10px 30px -10px rgb(185 28 28 / 0.25)',
       },
       keyframes: {
         'fade-up': {
